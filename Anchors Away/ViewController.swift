@@ -31,6 +31,9 @@ class ViewController: NSViewController {
 
     let defaults = UserDefaults.standard
 
+    @IBOutlet weak var spinner_ProgressIndicator: NSProgressIndicator!
+    var progressQ     = DispatchQueue(label: "com.jamf.aa.progressq", qos: DispatchQoS.background)
+
     @IBAction func fetch_Action(_ sender: Any) {
         if serverUrl_TextField.stringValue == "" || username_TextField.stringValue == "" || password_TextField.stringValue == "" {
             Alert().display(header: "Alert:", message: "Must supply Server, username, and password")
@@ -53,6 +56,7 @@ class ViewController: NSViewController {
         let jamfUtf8Creds   = jamfCreds.data(using: String.Encoding.utf8)
         jamfCredsB64     = (jamfUtf8Creds?.base64EncodedString())!
 
+        spinner(action: "start")
         // get token for authentication
         Json().getToken(serverUrl: serverUrl, base64creds: jamfCredsB64) {
             (result: String) in
@@ -138,6 +142,7 @@ class ViewController: NSViewController {
                                         }
                                     }
                                 }
+                                self.spinner(action: "stop")
                             }
 
                         }
@@ -151,12 +156,16 @@ class ViewController: NSViewController {
 
     func removeAnchors() {
         print("modifying prestages")
+        spinner(action: "start")
+        let totalRecords = (withAnchorArray?.count)!
+        var processed = 1
         // computers
         for (id, prestage) in modifiedComputerPrestages {
             Json().putRecord(serverUrl: self.serverUrl, token: self.token, theEndpoint: "computer-prestages/\(id)", prestage: prestage) {
                 (result: [String:[String:Any]]) in
                 for (httpResponse, _) in result {
                     print("put response for computer prestage id \(id): \(httpResponse)")
+                    processed+=1
                 }
             }
         }
@@ -166,7 +175,24 @@ class ViewController: NSViewController {
                 (result: [String:[String:Any]]) in
                 for (httpResponse, _) in result {
                     print("put response for mobile device prestage id \(id): \(httpResponse)")
+                    processed+=1
                 }
+            }
+        }
+        progressQ.async {
+            while processed < totalRecords {
+                sleep(2)
+            }
+            self.spinner(action: "stop")
+        }
+    }
+
+    func spinner(action: String) {
+        DispatchQueue.main.async {
+            if action == "start" {
+                self.spinner_ProgressIndicator.startAnimation(self)
+            } else {
+                self.spinner_ProgressIndicator.stopAnimation(self)
             }
         }
     }
