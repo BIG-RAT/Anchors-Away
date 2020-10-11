@@ -8,7 +8,7 @@
 
 import Cocoa
 
-class Json: NSURL, URLSessionDelegate {
+class Json: NSObject, URLSessionDelegate, URLSessionDataDelegate, URLSessionTaskDelegate {
     
     let defaults = UserDefaults.standard
     
@@ -17,16 +17,17 @@ class Json: NSURL, URLSessionDelegate {
         let getRecordQ = OperationQueue() // DispatchQueue(label: "com.jamf.getRecordQ", qos: DispatchQoS.background)
     
         URLCache.shared.removeAllCachedResponses()
-        var existingDestUrl = ""
+        var existingDestString = "\(serverUrl)/api/v2/\(theEndpoint)"
         
-        existingDestUrl = "\(serverUrl)/api/v2/\(theEndpoint)"
-        existingDestUrl = existingDestUrl.replacingOccurrences(of: "//api/v2", with: "/api/v2")
+        existingDestString = existingDestString.replacingOccurrences(of: "//api/v2", with: "/api/v2")
         
 //        if LogLevel.debug { WriteToLog().message(stringOfText: "[Json.getRecord] Looking up: \(existingDestUrl)\n") }
 //        print("[Json.getRecord] existing endpoints URL: \(existingDestUrl)")
-        let destEncodedURL = NSURL(string: existingDestUrl)
-        let jsonRequest    = NSMutableURLRequest(url: destEncodedURL! as URL)
-        
+
+//        print("check")
+        let existingDestUrl = URL(string: existingDestString)
+        var jsonRequest = URLRequest(url: existingDestUrl!)
+
         let semaphore = DispatchSemaphore(value: 0)
         getRecordQ.maxConcurrentOperationCount = 4
         getRecordQ.addOperation {
@@ -86,8 +87,7 @@ class Json: NSURL, URLSessionDelegate {
 //        print("[Json.putRecord] existing endpoints URL: \(existingDestUrl)")
 //        print("[Json.putRecord] passed prestage: \(prestage)")
 
-        let destEncodedURL = NSURL(string: existingDestUrl)
-        let jsonRequest    = NSMutableURLRequest(url: destEncodedURL! as URL)
+        var jsonRequest = URLRequest(url: URL(string: existingDestUrl)!)
 
         guard let jsonPrestage = try? JSONSerialization.data(withJSONObject: prestage, options: []) else {
             return
@@ -147,10 +147,13 @@ class Json: NSURL, URLSessionDelegate {
         URLCache.shared.removeAllCachedResponses()
         
         var token          = ""
-        
-        var tokenUrlString = "\(serverUrl)/uapi/auth/tokens"
-        tokenUrlString     = tokenUrlString.replacingOccurrences(of: "//uapi", with: "/uapi")
+
+        var tokenUrlString = "\(serverUrl)/api/auth/tokens"
+        tokenUrlString     = tokenUrlString.replacingOccurrences(of: "//api", with: "/api")
+//        var tokenUrlString = "\(serverUrl)/uapi/auth/tokens"
+//        tokenUrlString     = tokenUrlString.replacingOccurrences(of: "//uapi", with: "/uapi")
 //        print("\(tokenUrlString)")
+
         
         let tokenUrl       = URL(string: "\(tokenUrlString)")
         let configuration  = URLSessionConfiguration.default

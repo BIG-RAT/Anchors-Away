@@ -81,6 +81,23 @@ class ViewController: NSViewController {
                                 let id = "\(String(describing: computerPrestage["id"]!))"
                                 let anchorCertificates = computerPrestage["anchorCertificates"]! as! [String]
 
+                                for certificate in anchorCertificates {
+                                    let base64Encoded = certificate
+
+                                    let decodedData = Data(base64Encoded: base64Encoded)!
+                                    let pemCertString = String(data: decodedData, encoding: .utf8)!
+
+//                                    print(pemCertString)
+
+//                                    print("Anchor certificate for \(displayName): \(pemCertString)")
+                                    let certData = Data(base64Encoded: self.pemToString(pemCert: pemCertString))!
+
+                                    if let certificate = SecCertificateCreateWithData(nil, certData as CFData) {
+                                        let summary = SecCertificateCopySubjectSummary(certificate)! as String
+                                        print("Cert Name: \(summary)")
+                                    }
+                                }
+
 //                                print("Display Name: \(String(describing: displayName))")
 //                                print("anchorCertificates count: \(anchorCertificates.count)")
                                 if anchorCertificates.count > 0 {
@@ -148,10 +165,17 @@ class ViewController: NSViewController {
                         }
                     }   //Json().getRecord - mobile - end
                 }   //Json().getRecord - computers - end
-
             }
         }
 
+    }
+
+    func pemToString(pemCert: String) -> String {
+        var certAsString = pemCert
+        certAsString = certAsString.replacingOccurrences(of: "-----BEGIN CERTIFICATE-----", with: "")
+        certAsString = certAsString.replacingOccurrences(of: "-----END CERTIFICATE-----", with: "")
+        certAsString = certAsString.replacingOccurrences(of: "\n", with: "")
+        return certAsString
     }
 
     func removeAnchors() {
@@ -250,15 +274,13 @@ extension ViewController: NSTableViewDelegate {
 
         if tableColumn == object_TableView.tableColumns[0] {
             text = item[0]
-//            text = String("\(item)".split(separator: ",")[0])
             cellIdentifier = CellIdentifiers.TypeCell
         } else if tableColumn == object_TableView.tableColumns[1] {
             text = item[1]
-//            text = String("\(item)".split(separator: ",")[1])
             cellIdentifier = CellIdentifiers.NameCell
 //            object_TableView.tableColumns[1].isHidden = false
         }
-//        } else if tableColumn == object_TableView.tableColumns[1] {
+//        } else if tableColumn == object_TableView.tableColumns[2] {
 //            let result:NSPopUpButton = tableView.make(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "objectType"), owner: self) as! NSPopUpButton
 //            cellIdentifier = CellIdentifiers.TypeCell
 //        }
