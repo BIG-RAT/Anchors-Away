@@ -89,11 +89,11 @@ class Json: NSObject, URLSessionDelegate, URLSessionDataDelegate, URLSessionTask
 
         var jsonRequest = URLRequest(url: URL(string: existingDestUrl)!)
 
-        guard let jsonPrestage = try? JSONSerialization.data(withJSONObject: prestage, options: []) else {
+        guard let JSONSerializedPrestage = try? JSONSerialization.data(withJSONObject: prestage, options: []) else {
             return
         }
 
-        let encodedPrestage = jsonPrestage
+//        let encodedPrestage = JSONSerializedPrestage
 
 //        print("[Json.putRecord] data has been encoded")
 
@@ -102,7 +102,7 @@ class Json: NSObject, URLSessionDelegate, URLSessionDataDelegate, URLSessionTask
         getRecordQ.addOperation {
 
             jsonRequest.httpMethod = "PUT"
-            jsonRequest.httpBody   = encodedPrestage
+            jsonRequest.httpBody   = JSONSerializedPrestage
             let destConf = URLSessionConfiguration.default
             destConf.httpAdditionalHeaders = ["Authorization" : "Bearer \(token)", "Content-Type" : "application/json", "Accept" : "application/json"]
             let destSession = Foundation.URLSession(configuration: destConf, delegate: self, delegateQueue: OperationQueue.main)

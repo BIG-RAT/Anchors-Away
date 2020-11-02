@@ -7,12 +7,15 @@
 //
 
 import Cocoa
+import CommonCrypto
 
 class ViewController: NSViewController {
 
     @IBOutlet weak var serverUrl_TextField: NSTextField!
     @IBOutlet weak var username_TextField: NSTextField!
     @IBOutlet weak var password_TextField: NSSecureTextField!
+
+    @IBOutlet weak var existingAnchors_Button: NSPopUpButton!
 
     @IBOutlet weak var prestages_TableView: NSTableView!
     var withAnchorArray: [[String]]?
@@ -50,6 +53,11 @@ class ViewController: NSViewController {
         }
     }
 
+    @IBAction func showFingerprinig_Button(_ sender: Any) {
+        print("\(existingAnchors_Button.titleOfSelectedItem)")
+    }
+
+
     func fetchPrestages() {
         serverUrl = serverUrl_TextField.stringValue
         jamfCreds           = "\(username_TextField.stringValue):\(password_TextField.stringValue)"
@@ -73,7 +81,8 @@ class ViewController: NSViewController {
                 (result: [String:AnyObject]) in
 //                    print("prestages: \(result)")
                     if let _ = result["results"] {
-                        let computerPrestageArray = result["results"] as! [Dictionary<String, Any>]
+                        let computerPrestageArray = result["results"] as! [[String:Any]]
+//                        let computerPrestageArray = result["results"] as! [Dictionary<String, Any>]
                         let computerPrestageCount = computerPrestageArray.count
                         if computerPrestageCount > 0 {
                             for computerPrestage in computerPrestageArray {
@@ -94,7 +103,26 @@ class ViewController: NSViewController {
 
                                     if let certificate = SecCertificateCreateWithData(nil, certData as CFData) {
                                         let summary = SecCertificateCopySubjectSummary(certificate)! as String
-                                        print("Cert Name: \(summary)")
+//                                        let stuff = SecCertificateCopyData(certificate)
+                                        // and then doing a SHA1 of that data (with
+                                        // CC_SHA1
+                                        // nope - let fp = "\(stuff)".sha1()
+
+//                                        let data = Data(self.utf8)
+
+                                        var digest = [UInt8](repeating: 0, count:Int(CC_SHA1_DIGEST_LENGTH))
+                                        certData.withUnsafeBytes {
+                                            _ = CC_SHA1($0.baseAddress, CC_LONG(certData.count), &digest)
+                                        }
+                                        let fp = digest.map { String(format: "%02hhx", $0) }
+                                        var fingerprint = ""
+                                        for hexValue in fp {
+                                            fingerprint.append("\(hexValue) ")
+                                        }
+
+                                        print("Cert Name: \(summary) \t fingerprint: \(fingerprint)")
+                                        self.existingAnchors_Button.addItem(withTitle: "\(summary)")
+//                                        self.existingAnchors_Button.addIte
                                     }
                                 }
 
@@ -185,6 +213,8 @@ class ViewController: NSViewController {
         var processed = 1
         // computers
         for (id, prestage) in modifiedComputerPrestages {
+            print("\nmodified prestage (id=\(id):")
+            print("\(prestage)")
             Json().putRecord(serverUrl: self.serverUrl, token: self.token, theEndpoint: "computer-prestages/\(id)", prestage: prestage) {
                 (result: [String:[String:Any]]) in
                 for (httpResponse, _) in result {
@@ -294,4 +324,16 @@ extension ViewController: NSTableViewDelegate {
 
 
 
+}
+
+extension String {
+    func sha1() -> String {
+        let data = Data(self.utf8)
+        var digest = [UInt8](repeating: 0, count:Int(CC_SHA1_DIGEST_LENGTH))
+        data.withUnsafeBytes {
+            _ = CC_SHA1($0.baseAddress, CC_LONG(data.count), &digest)
+        }
+        let hexBytes = digest.map { String(format: "%02hhx", $0) }
+        return hexBytes.joined()
+    }
 }
