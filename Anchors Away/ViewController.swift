@@ -15,7 +15,8 @@ class ViewController: NSViewController {
     @IBOutlet weak var username_TextField: NSTextField!
     @IBOutlet weak var password_TextField: NSSecureTextField!
 
-    @IBOutlet weak var existingAnchors_Button: NSPopUpButton!
+//    @IBOutlet weak var existingAnchors_Button: NSPopUpButton!
+    @IBOutlet weak var platforms_Button: NSPopUpButton!
 
     @IBOutlet weak var prestages_TableView: NSTableView!
     var withAnchorArray: [[String]]?
@@ -31,11 +32,18 @@ class ViewController: NSViewController {
     var jamfCreds    = ""
     var jamfCredsB64 = ""
     var token        = ""
+    var platforms    = "All"
 
     let defaults = UserDefaults.standard
 
     @IBOutlet weak var spinner_ProgressIndicator: NSProgressIndicator!
     var progressQ     = DispatchQueue(label: "com.jamf.aa.progressq", qos: DispatchQoS.background)
+
+    @IBAction func anchorsToRemove(_ sender: Any) {
+//        print("\(platforms_Button.titleOfSelectedItem!)")
+        platforms = platforms_Button.titleOfSelectedItem!
+        fetchPrestages()
+    }
 
     @IBAction func fetch_Action(_ sender: Any) {
         if serverUrl_TextField.stringValue == "" || username_TextField.stringValue == "" || password_TextField.stringValue == "" {
@@ -54,7 +62,7 @@ class ViewController: NSViewController {
     }
 
     @IBAction func showFingerprinig_Button(_ sender: Any) {
-        print("\(existingAnchors_Button.titleOfSelectedItem)")
+        print("\(String(describing: platforms_Button.titleOfSelectedItem))")
     }
 
 
@@ -65,6 +73,12 @@ class ViewController: NSViewController {
         jamfCredsB64     = (jamfUtf8Creds?.base64EncodedString())!
 
         spinner(action: "start")
+        self.withAnchorArray?.removeAll()
+        self.modifiedComputerPrestages.removeAll()
+        self.modifiedMobilePrestages.removeAll()
+        DispatchQueue.main.async {
+            self.prestages_TableView.reloadData()
+        }
         // get token for authentication
         Json().getToken(serverUrl: serverUrl, base64creds: jamfCredsB64) {
             (result: String) in
@@ -75,16 +89,17 @@ class ViewController: NSViewController {
                 self.defaults.set("\(self.serverUrl_TextField.stringValue)", forKey: "serverUrl")
                 self.defaults.set("\(self.username_TextField.stringValue)", forKey: "username")
 
-                self.withAnchorArray?.removeAll()
+
                 // get computer prestages
-                Json().getRecord(serverUrl: self.serverUrl, token: self.token, theEndpoint: "computer-prestages") {
+
+                Json().getRecord(serverUrl: self.serverUrl, token: self.token, theEndpoint: "computer-prestages", skip: self.skip(endpoint: "computer-prestages")) {
                 (result: [String:AnyObject]) in
 //                    print("prestages: \(result)")
                     if let _ = result["results"] {
                         let computerPrestageArray = result["results"] as! [[String:Any]]
 //                        let computerPrestageArray = result["results"] as! [Dictionary<String, Any>]
-                        let computerPrestageCount = computerPrestageArray.count
-                        if computerPrestageCount > 0 {
+//                        let computerPrestageCount = computerPrestageArray.count
+//                        if computerPrestageCount > 0 {
                             for computerPrestage in computerPrestageArray {
                                 let displayName = "\(String(describing: computerPrestage["displayName"]!))"
                                 let id = "\(String(describing: computerPrestage["id"]!))"
@@ -121,8 +136,8 @@ class ViewController: NSViewController {
                                         }
 
                                         print("Cert Name: \(summary) \t fingerprint: \(fingerprint)")
-                                        self.existingAnchors_Button.addItem(withTitle: "\(summary)")
-//                                        self.existingAnchors_Button.addIte
+                                        // add cert to dropdown list
+//                                        self.existingAnchors_Button.addItem(withTitle: "\(summary)")
                                     }
                                 }
 
@@ -149,11 +164,17 @@ class ViewController: NSViewController {
                                     }
                                 }
                             }
-                        }
+                            print("finished fetching macOS prestages")
+                        print("platforms: \(self.platforms)")
+                            if self.platforms == "macOS" {
+                                print("macOS only, stop spinner")
+                                self.spinner(action: "stop")
+                            }
+//                        }
                     }
 
                     // get mobile device prestages
-                    Json().getRecord(serverUrl: self.serverUrl, token: self.token, theEndpoint: "mobile-device-prestages") {
+                    Json().getRecord(serverUrl: self.serverUrl, token: self.token, theEndpoint: "mobile-device-prestages", skip: self.skip(endpoint: "mobile-device-prestages")) {
                     (result: [String:AnyObject]) in
 //                        print("prestages: \(result)")
                         if let _ = result["results"] {
@@ -195,7 +216,6 @@ class ViewController: NSViewController {
                 }   //Json().getRecord - computers - end
             }
         }
-
     }
 
     func pemToString(pemCert: String) -> String {
@@ -239,6 +259,21 @@ class ViewController: NSViewController {
             }
             self.spinner(action: "stop")
         }
+    }
+
+    func skip(endpoint: String) -> Bool {
+        var skipResult = false
+        switch endpoint {
+        case "computer-prestages":
+            if platforms == "iOS" {
+                skipResult = true
+            }
+        default:
+            if platforms == "macOS" {
+                skipResult = true
+            }
+        }
+        return skipResult
     }
 
     func spinner(action: String) {

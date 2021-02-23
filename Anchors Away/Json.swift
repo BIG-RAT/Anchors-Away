@@ -12,65 +12,69 @@ class Json: NSObject, URLSessionDelegate, URLSessionDataDelegate, URLSessionTask
     
     let defaults = UserDefaults.standard
     
-    func getRecord(serverUrl: String, token: String, theEndpoint: String, completion: @escaping (_ result: [String:AnyObject]) -> Void) {
+    func getRecord(serverUrl: String, token: String, theEndpoint: String, skip: Bool, completion: @escaping (_ result: [String:AnyObject]) -> Void) {
+        print("endpoint: \(theEndpoint)     skip: \(skip)")
+        if !skip {
+            let getRecordQ = OperationQueue() // DispatchQueue(label: "com.jamf.getRecordQ", qos: DispatchQoS.background)
 
-        let getRecordQ = OperationQueue() // DispatchQueue(label: "com.jamf.getRecordQ", qos: DispatchQoS.background)
-    
-        URLCache.shared.removeAllCachedResponses()
-        var existingDestString = "\(serverUrl)/api/v2/\(theEndpoint)"
-        
-        existingDestString = existingDestString.replacingOccurrences(of: "//api/v2", with: "/api/v2")
-        
-//        if LogLevel.debug { WriteToLog().message(stringOfText: "[Json.getRecord] Looking up: \(existingDestUrl)\n") }
-//        print("[Json.getRecord] existing endpoints URL: \(existingDestUrl)")
+            URLCache.shared.removeAllCachedResponses()
+            var existingDestString = "\(serverUrl)/api/v2/\(theEndpoint)"
 
-//        print("check")
-        let existingDestUrl = URL(string: existingDestString)
-        var jsonRequest = URLRequest(url: existingDestUrl!)
+            existingDestString = existingDestString.replacingOccurrences(of: "//api/v2", with: "/api/v2")
 
-        let semaphore = DispatchSemaphore(value: 0)
-        getRecordQ.maxConcurrentOperationCount = 4
-        getRecordQ.addOperation {
-            
-            jsonRequest.httpMethod = "GET"
-            let destConf = URLSessionConfiguration.default
-            destConf.httpAdditionalHeaders = ["Authorization" : "Bearer \(token)", "Content-Type" : "application/json", "Accept" : "application/json"]
-            let destSession = Foundation.URLSession(configuration: destConf, delegate: self, delegateQueue: OperationQueue.main)
-            let task = destSession.dataTask(with: jsonRequest as URLRequest, completionHandler: {
-                (data, response, error) -> Void in
-                if let httpResponse = response as? HTTPURLResponse {
-//                    print("[Json.getRecord] httpResponse: \(String(describing: httpResponse))")
-                    if httpResponse.statusCode >= 200 && httpResponse.statusCode <= 299 {
-                        do {
-                            let json = try? JSONSerialization.jsonObject(with: data!, options: .allowFragments)
-                            if let endpointJSON = json as? [String:AnyObject] {
-//                                if LogLevel.debug { WriteToLog().message(stringOfText: "[Json.getRecord] \(endpointJSON)\n") }
-//                                print("[Json.getRecord] endpointJSON: \(endpointJSON)")
-                                completion(endpointJSON)
-                            } else {
-//                                WriteToLog().message(stringOfText: "[Json.getRecord] error parsing JSON for \(existingDestUrl)\n")
-                                completion([:])
+    //        if LogLevel.debug { WriteToLog().message(stringOfText: "[Json.getRecord] Looking up: \(existingDestUrl)\n") }
+    //        print("[Json.getRecord] existing endpoints URL: \(existingDestUrl)")
+
+    //        print("check")
+            let existingDestUrl = URL(string: existingDestString)
+            var jsonRequest = URLRequest(url: existingDestUrl!)
+
+            let semaphore = DispatchSemaphore(value: 0)
+            getRecordQ.maxConcurrentOperationCount = 4
+            getRecordQ.addOperation {
+
+                jsonRequest.httpMethod = "GET"
+                let destConf = URLSessionConfiguration.default
+                destConf.httpAdditionalHeaders = ["Authorization" : "Bearer \(token)", "Content-Type" : "application/json", "Accept" : "application/json"]
+                let destSession = Foundation.URLSession(configuration: destConf, delegate: self, delegateQueue: OperationQueue.main)
+                let task = destSession.dataTask(with: jsonRequest as URLRequest, completionHandler: {
+                    (data, response, error) -> Void in
+                    if let httpResponse = response as? HTTPURLResponse {
+    //                    print("[Json.getRecord] httpResponse: \(String(describing: httpResponse))")
+                        if httpResponse.statusCode >= 200 && httpResponse.statusCode <= 299 {
+                            do {
+                                let json = try? JSONSerialization.jsonObject(with: data!, options: .allowFragments)
+                                if let endpointJSON = json as? [String:AnyObject] {
+    //                                if LogLevel.debug { WriteToLog().message(stringOfText: "[Json.getRecord] \(endpointJSON)\n") }
+    //                                print("[Json.getRecord] endpointJSON: \(endpointJSON)")
+                                    completion(endpointJSON)
+                                } else {
+    //                                WriteToLog().message(stringOfText: "[Json.getRecord] error parsing JSON for \(existingDestUrl)\n")
+                                    completion([:])
+                                }
                             }
+                        } else {
+                            print("[Json.getRecord] error HTTP Status Code: \(httpResponse.statusCode)\n")
+                            if "\(httpResponse.statusCode)" == "401" {
+                                Alert().display(header: "Alert", message: "Verify username and password.")
+                            }
+    //                        WriteToLog().message(stringOfText: "[Json.getRecord] error HTTP Status Code: \(httpResponse.statusCode)\n")
+                            completion([:])
                         }
                     } else {
-                        print("[Json.getRecord] error HTTP Status Code: \(httpResponse.statusCode)\n")
-                        if "\(httpResponse.statusCode)" == "401" {
-                            Alert().display(header: "Alert", message: "Verify username and password.")
-                        }
-//                        WriteToLog().message(stringOfText: "[Json.getRecord] error HTTP Status Code: \(httpResponse.statusCode)\n")
+    //                    WriteToLog().message(stringOfText: "[Json.getRecord] error parsing JSON for \(existingDestUrl)\n")
                         completion([:])
+                    }   // if let httpResponse - end
+                    semaphore.signal()
+                    if error != nil {
                     }
-                } else {
-//                    WriteToLog().message(stringOfText: "[Json.getRecord] error parsing JSON for \(existingDestUrl)\n")
-                    completion([:])
-                }   // if let httpResponse - end
-                semaphore.signal()
-                if error != nil {
-                }
-            })  // let task = destSession - end
-            //print("GET")
-            task.resume()
-        }   // getRecordQ - end
+                })  // let task = destSession - end
+                //print("GET")
+                task.resume()
+            }   // getRecordQ - end
+        } else {
+            completion([:])
+        }   // func getRecord - end
     }
 
     func putRecord(serverUrl: String, token: String, theEndpoint: String, prestage: [String: Any], completion: @escaping (_ result: [String:[String:Any]]) -> Void) {
