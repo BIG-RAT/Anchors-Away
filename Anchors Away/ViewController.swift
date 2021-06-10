@@ -217,6 +217,8 @@ class ViewController: NSViewController {
                                     }
                                 }
                                 self.spinner(action: "stop")
+                            } else {
+                                self.spinner(action: "stop")
                             }
 
                         }
