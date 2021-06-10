@@ -97,10 +97,8 @@ class ViewController: NSViewController {
 //                    print("prestages: \(result)")
                     if let _ = result["results"] {
                         let computerPrestageArray = result["results"] as! [[String:Any]]
-//                        let computerPrestageArray = result["results"] as! [Dictionary<String, Any>]
-//                        let computerPrestageCount = computerPrestageArray.count
-//                        if computerPrestageCount > 0 {
-                            for computerPrestage in computerPrestageArray {
+                        for computerPrestage in computerPrestageArray {
+                            if let _ = computerPrestage["displayName"], let _ = computerPrestage["id"], let _ = computerPrestage["anchorCertificates"] {
                                 let displayName = "\(String(describing: computerPrestage["displayName"]!))"
                                 let id = "\(String(describing: computerPrestage["id"]!))"
                                 let anchorCertificates = computerPrestage["anchorCertificates"]! as! [String]
@@ -111,19 +109,19 @@ class ViewController: NSViewController {
                                     let decodedData = Data(base64Encoded: base64Encoded)!
                                     let pemCertString = String(data: decodedData, encoding: .utf8)!
 
-//                                    print(pemCertString)
+    //                                    print(pemCertString)
 
-//                                    print("Anchor certificate for \(displayName): \(pemCertString)")
+    //                                    print("Anchor certificate for \(displayName): \(pemCertString)")
                                     let certData = Data(base64Encoded: self.pemToString(pemCert: pemCertString))!
 
                                     if let certificate = SecCertificateCreateWithData(nil, certData as CFData) {
                                         let summary = SecCertificateCopySubjectSummary(certificate)! as String
-//                                        let stuff = SecCertificateCopyData(certificate)
+    //                                        let stuff = SecCertificateCopyData(certificate)
                                         // and then doing a SHA1 of that data (with
                                         // CC_SHA1
                                         // nope - let fp = "\(stuff)".sha1()
 
-//                                        let data = Data(self.utf8)
+    //                                        let data = Data(self.utf8)
 
                                         var digest = [UInt8](repeating: 0, count:Int(CC_SHA1_DIGEST_LENGTH))
                                         certData.withUnsafeBytes {
@@ -137,40 +135,42 @@ class ViewController: NSViewController {
 
                                         print("Cert Name: \(summary) \t fingerprint: \(fingerprint)")
                                         // add cert to dropdown list
-//                                        self.existingAnchors_Button.addItem(withTitle: "\(summary)")
+    //                                        self.existingAnchors_Button.addItem(withTitle: "\(summary)")
                                     }
                                 }
 
-//                                print("Display Name: \(String(describing: displayName))")
-//                                print("anchorCertificates count: \(anchorCertificates.count)")
+    //                                print("Display Name: \(String(describing: displayName))")
+    //                                print("anchorCertificates count: \(anchorCertificates.count)")
                                 if anchorCertificates.count > 0 {
-//                                    print("before: \(computerPrestage)")
+    //                                    print("before: \(computerPrestage)")
                                     if self.withAnchorArray?.count != nil {
-//                                        print("add to withAnchorArray")
+    //                                        print("add to withAnchorArray")
                                         self.withAnchorArray?.append(["computer", "\(String(describing: displayName))", "\(id)"])
                                     } else {
-//                                        print("initialize withAnchorArray")
+    //                                        print("initialize withAnchorArray")
                                         self.withAnchorArray = [["computer", "\(String(describing: displayName))", "\(id)"]]
                                     }
-//                                    let modifiedAnchorCertificates = [String]()
+    //                                    let modifiedAnchorCertificates = [String]()
                                     var modifiedPrestage = computerPrestage
                                     modifiedPrestage["anchorCertificates"] = [String]() //modifiedAnchorCertificates
 
                                     self.modifiedComputerPrestages["\(id)"] = modifiedPrestage
-//                                    print("after: \(self.modifiedComputerPrestages)")
+    //                                    print("after: \(self.modifiedComputerPrestages)")
                                     DispatchQueue.main.async {
                                         self.prestages_TableView.reloadData()
             //                            print("\(String(describing: self.withAnchorArray))")
                                     }
                                 }
+                            } else {
+                                print("missing data in \(computerPrestage)")
                             }
-                            print("finished fetching macOS prestages")
+                        }
+                        print("finished fetching macOS prestages")
                         print("platforms: \(self.platforms)")
-                            if self.platforms == "macOS" {
-                                print("macOS only, stop spinner")
-                                self.spinner(action: "stop")
-                            }
-//                        }
+                        if self.platforms == "macOS" {
+                            print("macOS only, stop spinner")
+                            self.spinner(action: "stop")
+                        }
                     }
 
                     // get mobile device prestages
@@ -182,30 +182,34 @@ class ViewController: NSViewController {
                             let prestageCount = prestageArray.count
                             if prestageCount > 0 {
                                 for devicePrestage in prestageArray {
-                                    let displayName = "\(String(describing: devicePrestage["displayName"]!))"
-                                    let id = "\(String(describing: devicePrestage["id"]!))"
-                                    let anchorCertificates = devicePrestage["anchorCertificates"]! as! [String]
+                                    if let _ = devicePrestage["displayName"], let _ = devicePrestage["id"], let _ = devicePrestage["anchorCertificates"] {
+                                        let displayName = "\(String(describing: devicePrestage["displayName"]!))"
+                                        let id = "\(String(describing: devicePrestage["id"]!))"
+                                        let anchorCertificates = devicePrestage["anchorCertificates"]! as! [String]
 
-//                                    print("Display Name: \(String(describing: displayName))")
-//                                    print("anchorCertificates count: \(anchorCertificates.count)")
-                                    if anchorCertificates.count > 0 {
-//                                        print("before: \(devicePrestage)")
-                                        if self.withAnchorArray?.count != nil {
-//                                            print("add to withAnchorArray")
-                                            self.withAnchorArray?.append(["mobile", "\(String(describing: displayName))", "\(id)"])
-                                        } else {
-//                                            print("initialize withAnchorArray")
-                                            self.withAnchorArray = [["mobile", "\(String(describing: displayName))", "\(id)"]]
-                                        }
-                                        var modifiedPrestage = devicePrestage
-                                        modifiedPrestage["anchorCertificates"] = [String]() //modifiedAnchorCertificates
+    //                                    print("Display Name: \(String(describing: displayName))")
+    //                                    print("anchorCertificates count: \(anchorCertificates.count)")
+                                        if anchorCertificates.count > 0 {
+    //                                        print("before: \(devicePrestage)")
+                                            if self.withAnchorArray?.count != nil {
+    //                                            print("add to withAnchorArray")
+                                                self.withAnchorArray?.append(["mobile", "\(String(describing: displayName))", "\(id)"])
+                                            } else {
+    //                                            print("initialize withAnchorArray")
+                                                self.withAnchorArray = [["mobile", "\(String(describing: displayName))", "\(id)"]]
+                                            }
+                                            var modifiedPrestage = devicePrestage
+                                            modifiedPrestage["anchorCertificates"] = [String]() //modifiedAnchorCertificates
 
-                                        self.modifiedMobilePrestages["\(id)"] = modifiedPrestage
-//                                        print("after: \(modifiedPrestage)")
-                                        DispatchQueue.main.async {
-                                            self.prestages_TableView.reloadData()
-            //                                print("\(String(describing: self.withAnchorArray))")
+                                            self.modifiedMobilePrestages["\(id)"] = modifiedPrestage
+    //                                        print("after: \(modifiedPrestage)")
+                                            DispatchQueue.main.async {
+                                                self.prestages_TableView.reloadData()
+                //                                print("\(String(describing: self.withAnchorArray))")
+                                            }
                                         }
+                                    } else {
+                                        print("missing data in \(devicePrestage)")
                                     }
                                 }
                                 self.spinner(action: "stop")
@@ -233,7 +237,7 @@ class ViewController: NSViewController {
         var processed = 1
         // computers
         for (id, prestage) in modifiedComputerPrestages {
-            print("\nmodified prestage (id=\(id):")
+            print("\nmodified computer prestage - id=\(id):")
             print("\(prestage)")
             Json().putRecord(serverUrl: self.serverUrl, token: self.token, theEndpoint: "computer-prestages/\(id)", prestage: prestage) {
                 (result: [String:[String:Any]]) in
@@ -245,6 +249,8 @@ class ViewController: NSViewController {
         }
         // mobile devices
         for (id, prestage) in modifiedMobilePrestages {
+            print("\nmodified mobile prestage - id=\(id):")
+            print("\(prestage)")
             Json().putRecord(serverUrl: self.serverUrl, token: self.token, theEndpoint: "mobile-device-prestages/\(id)", prestage: prestage) {
                 (result: [String:[String:Any]]) in
                 for (httpResponse, _) in result {
