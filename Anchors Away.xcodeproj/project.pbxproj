@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B51FB43C267233FE00A54857 /* WriteToLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51FB43B267233FE00A54857 /* WriteToLog.swift */; };
+		B51FB43F2672346800A54857 /* Globals.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51FB43E2672346800A54857 /* Globals.swift */; };
 		B52FF0F8251D069800041BC9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52FF0F7251D069800041BC9 /* AppDelegate.swift */; };
 		B52FF0FA251D069800041BC9 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52FF0F9251D069800041BC9 /* ViewController.swift */; };
 		B52FF0FC251D06A000041BC9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B52FF0FB251D06A000041BC9 /* Assets.xcassets */; };
@@ -16,6 +18,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		B51FB43B267233FE00A54857 /* WriteToLog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WriteToLog.swift; sourceTree = "<group>"; };
+		B51FB43E2672346800A54857 /* Globals.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Globals.swift; sourceTree = "<group>"; };
 		B52FF0F4251D069800041BC9 /* Anchors Away.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Anchors Away.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B52FF0F7251D069800041BC9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B52FF0F9251D069800041BC9 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -59,8 +63,10 @@
 			children = (
 				B52FF109251D0AD800041BC9 /* Alert.swift */,
 				B52FF0F7251D069800041BC9 /* AppDelegate.swift */,
+				B51FB43E2672346800A54857 /* Globals.swift */,
 				B52FF107251D0A8C00041BC9 /* Json.swift */,
 				B52FF0F9251D069800041BC9 /* ViewController.swift */,
+				B51FB43B267233FE00A54857 /* WriteToLog.swift */,
 				B52FF0FB251D06A000041BC9 /* Assets.xcassets */,
 				B52FF0FD251D06A000041BC9 /* Main.storyboard */,
 				B52FF100251D06A000041BC9 /* Info.plist */,
@@ -141,8 +147,10 @@
 			files = (
 				B52FF108251D0A8D00041BC9 /* Json.swift in Sources */,
 				B52FF0FA251D069800041BC9 /* ViewController.swift in Sources */,
+				B51FB43F2672346800A54857 /* Globals.swift in Sources */,
 				B52FF10A251D0AD800041BC9 /* Alert.swift in Sources */,
 				B52FF0F8251D069800041BC9 /* AppDelegate.swift in Sources */,
+				B51FB43C267233FE00A54857 /* WriteToLog.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -13,7 +13,7 @@ class Json: NSObject, URLSessionDelegate, URLSessionDataDelegate, URLSessionTask
     let defaults = UserDefaults.standard
     
     func getRecord(serverUrl: String, token: String, theEndpoint: String, skip: Bool, completion: @escaping (_ result: [String:AnyObject]) -> Void) {
-        print("endpoint: \(theEndpoint)     skip: \(skip)")
+        WriteToLog().message(stringOfText: "endpoint: \(theEndpoint)     skip: \(skip)")
         if !skip {
             let getRecordQ = OperationQueue() // DispatchQueue(label: "com.jamf.getRecordQ", qos: DispatchQoS.background)
 
@@ -23,9 +23,9 @@ class Json: NSObject, URLSessionDelegate, URLSessionDataDelegate, URLSessionTask
             existingDestString = existingDestString.replacingOccurrences(of: "//api/v2", with: "/api/v2")
 
     //        if LogLevel.debug { WriteToLog().message(stringOfText: "[Json.getRecord] Looking up: \(existingDestUrl)\n") }
-    //        print("[Json.getRecord] existing endpoints URL: \(existingDestUrl)")
+    //        WriteToLog().message(stringOfText: "[Json.getRecord] existing endpoints URL: \(existingDestUrl)")
 
-    //        print("check")
+    //        WriteToLog().message(stringOfText: "check")
             let existingDestUrl = URL(string: existingDestString)
             var jsonRequest = URLRequest(url: existingDestUrl!)
 
@@ -40,13 +40,13 @@ class Json: NSObject, URLSessionDelegate, URLSessionDataDelegate, URLSessionTask
                 let task = destSession.dataTask(with: jsonRequest as URLRequest, completionHandler: {
                     (data, response, error) -> Void in
                     if let httpResponse = response as? HTTPURLResponse {
-    //                    print("[Json.getRecord] httpResponse: \(String(describing: httpResponse))")
+    //                    WriteToLog().message(stringOfText: "[Json.getRecord] httpResponse: \(String(describing: httpResponse))")
                         if httpResponse.statusCode >= 200 && httpResponse.statusCode <= 299 {
                             do {
                                 let json = try? JSONSerialization.jsonObject(with: data!, options: .allowFragments)
                                 if let endpointJSON = json as? [String:AnyObject] {
     //                                if LogLevel.debug { WriteToLog().message(stringOfText: "[Json.getRecord] \(endpointJSON)\n") }
-    //                                print("[Json.getRecord] endpointJSON: \(endpointJSON)")
+    //                                WriteToLog().message(stringOfText: "[Json.getRecord] endpointJSON: \(endpointJSON)")
                                     completion(endpointJSON)
                                 } else {
     //                                WriteToLog().message(stringOfText: "[Json.getRecord] error parsing JSON for \(existingDestUrl)\n")
@@ -54,7 +54,7 @@ class Json: NSObject, URLSessionDelegate, URLSessionDataDelegate, URLSessionTask
                                 }
                             }
                         } else {
-                            print("[Json.getRecord] error HTTP Status Code: \(httpResponse.statusCode)\n")
+                            WriteToLog().message(stringOfText: "[Json.getRecord] error HTTP Status Code: \(httpResponse.statusCode)\n")
                             if "\(httpResponse.statusCode)" == "401" {
                                 Alert().display(header: "Alert", message: "Verify username and password.")
                             }
@@ -69,7 +69,6 @@ class Json: NSObject, URLSessionDelegate, URLSessionDataDelegate, URLSessionTask
                     if error != nil {
                     }
                 })  // let task = destSession - end
-                //print("GET")
                 task.resume()
             }   // getRecordQ - end
         } else {
@@ -88,8 +87,8 @@ class Json: NSObject, URLSessionDelegate, URLSessionDataDelegate, URLSessionTask
         existingDestUrl = existingDestUrl.replacingOccurrences(of: "//api/v2", with: "/api/v2")
 
 //        if LogLevel.debug { WriteToLog().message(stringOfText: "[Json.getRecord] Looking up: \(existingDestUrl)\n") }
-//        print("[Json.putRecord] existing endpoints URL: \(existingDestUrl)")
-//        print("[Json.putRecord] passed prestage: \(prestage)")
+//        WriteToLog().message(stringOfText: "[Json.putRecord] existing endpoints URL: \(existingDestUrl)")
+//        WriteToLog().message(stringOfText: "[Json.putRecord] passed prestage: \(prestage)")
 
         var jsonRequest = URLRequest(url: URL(string: existingDestUrl)!)
 
@@ -99,7 +98,7 @@ class Json: NSObject, URLSessionDelegate, URLSessionDataDelegate, URLSessionTask
 
 //        let encodedPrestage = JSONSerializedPrestage
 
-//        print("[Json.putRecord] data has been encoded")
+//        WriteToLog().message(stringOfText: "[Json.putRecord] data has been encoded")
 
         let semaphore = DispatchSemaphore(value: 0)
         getRecordQ.maxConcurrentOperationCount = 4
@@ -113,7 +112,7 @@ class Json: NSObject, URLSessionDelegate, URLSessionDataDelegate, URLSessionTask
             let task = destSession.dataTask(with: jsonRequest as URLRequest, completionHandler: {
                 (data, response, error) -> Void in
                 if let httpResponse = response as? HTTPURLResponse {
-//                    print("[Json.getRecord] httpResponse: \(String(describing: httpResponse))")
+//                    WriteToLog().message(stringOfText: "[Json.getRecord] httpResponse: \(String(describing: httpResponse))")
                     if httpResponse.statusCode >= 200 && httpResponse.statusCode <= 299 {
                         do {
                             let json = try? JSONSerialization.jsonObject(with: data!, options: .allowFragments)
@@ -126,22 +125,21 @@ class Json: NSObject, URLSessionDelegate, URLSessionDataDelegate, URLSessionTask
                             }
                         }
                     } else {
-                        print("[Json.putRecord] error HTTP Status Code: \(httpResponse.statusCode)\n")
+                        WriteToLog().message(stringOfText: "[Json.putRecord] error HTTP Status Code: \(httpResponse.statusCode)")
                         if "\(httpResponse.statusCode)" == "401" {
                             Alert().display(header: "Alert", message: "Verify username and password.")
                         }
 //                        WriteToLog().message(stringOfText: "[Json.getRecord] error HTTP Status Code: \(httpResponse.statusCode)\n")
-                        completion([:])
+                        completion(["\(httpResponse.statusCode)":[:]])
                     }
                 } else {
 //                    WriteToLog().message(stringOfText: "[Json.getRecord] error parsing JSON for \(existingDestUrl)\n")
-                    completion([:])
+                    completion(["No response":[:]])
                 }   // if let httpResponse - end
                 semaphore.signal()
                 if error != nil {
                 }
             })  // let task = destSession - end
-            //print("GET")
             task.resume()
         }   // getRecordQ - end
     }
@@ -156,7 +154,7 @@ class Json: NSObject, URLSessionDelegate, URLSessionDataDelegate, URLSessionTask
         tokenUrlString     = tokenUrlString.replacingOccurrences(of: "//api", with: "/api")
 //        var tokenUrlString = "\(serverUrl)/uapi/auth/tokens"
 //        tokenUrlString     = tokenUrlString.replacingOccurrences(of: "//uapi", with: "/uapi")
-//        print("\(tokenUrlString)")
+//        WriteToLog().message(stringOfText: "\(tokenUrlString)")
 
         
         let tokenUrl       = URL(string: "\(tokenUrlString)")
@@ -176,12 +174,12 @@ class Json: NSObject, URLSessionDelegate, URLSessionDataDelegate, URLSessionTask
                         completion(token)
                         return
                     } else {    // if let endpointJSON error
-                        print("JSON error")
+                        WriteToLog().message(stringOfText: "JSON error")
                         completion("")
                         return
                     }
                 } else {    // if httpResponse.statusCode <200 or >299
-                    print("response error: \(httpResponse.statusCode)")
+                    WriteToLog().message(stringOfText: "response error: \(httpResponse.statusCode)")
 
                     if "\(httpResponse.statusCode)" == "401" {
                         Alert().display(header: "Alert", message: "Failed to authenticate.  Verify username and password.")
@@ -190,7 +188,7 @@ class Json: NSObject, URLSessionDelegate, URLSessionDataDelegate, URLSessionTask
                     return
                 }
             } else {
-                print("token response error.  Verify url and port.")
+                WriteToLog().message(stringOfText: "token response error.  Verify url and port.")
                 Alert().display(header: "Alert", message: "No response from the server.  Verify URL and port.")
                 completion("")
                 return
