@@ -150,7 +150,7 @@ class Json: NSObject, URLSessionDelegate, URLSessionDataDelegate, URLSessionTask
         
         var token          = ""
 
-        var tokenUrlString = "\(serverUrl)/api/auth/tokens"
+        var tokenUrlString = "\(serverUrl)/api/v1/auth/token"
         tokenUrlString     = tokenUrlString.replacingOccurrences(of: "//api", with: "/api")
 //        var tokenUrlString = "\(serverUrl)/uapi/auth/tokens"
 //        tokenUrlString     = tokenUrlString.replacingOccurrences(of: "//uapi", with: "/uapi")

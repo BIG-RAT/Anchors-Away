@@ -183,8 +183,8 @@ class ViewController: NSViewController {
 //                        WriteToLog().message(stringOfText: "prestages: \(result)")
                         if let _ = result["results"] {
                             let prestageArray = result["results"] as! [Dictionary<String, Any>]
-                            let prestageCount = prestageArray.count
-                            if prestageCount > 0 {
+//                            let prestageCount = prestageArray.count
+//                            if prestageCount > 0 {
                                 for devicePrestage in prestageArray {
                                     if let _ = devicePrestage["displayName"], let _ = devicePrestage["id"], let _ = devicePrestage["anchorCertificates"] {
                                         let displayName = "\(String(describing: devicePrestage["displayName"]!))"
@@ -217,10 +217,9 @@ class ViewController: NSViewController {
                                     }
                                 }
                                 self.spinner(action: "stop")
-                            } else {
-                                self.spinner(action: "stop")
-                            }
-
+//                            } else {
+//                                self.spinner(action: "stop")
+//                            }
                         }
                     }   //Json().getRecord - mobile - end
                 }   //Json().getRecord - computers - end
