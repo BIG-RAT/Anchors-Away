@@ -95,7 +95,7 @@ class ViewController: NSViewController {
 
                 // get computer prestages
 
-                Json().getRecord(serverUrl: self.serverUrl, token: self.token, theEndpoint: "computer-prestages", skip: self.skip(endpoint: "computer-prestages")) {
+                Json().getRecord(serverUrl: self.serverUrl, token: self.token, theEndpoint: "computer-prestages", page: 0, skip: self.skip(endpoint: "computer-prestages")) {
                 (result: [String:AnyObject]) in
 //                    WriteToLog().message(stringOfText: "prestages: \(result)")
                     if let _ = result["results"] {
@@ -178,7 +178,7 @@ class ViewController: NSViewController {
                     }
 
                     // get mobile device prestages
-                    Json().getRecord(serverUrl: self.serverUrl, token: self.token, theEndpoint: "mobile-device-prestages", skip: self.skip(endpoint: "mobile-device-prestages")) {
+                    Json().getRecord(serverUrl: self.serverUrl, token: self.token, theEndpoint: "mobile-device-prestages", page: 0, skip: self.skip(endpoint: "mobile-device-prestages")) {
                     (result: [String:AnyObject]) in
 //                        WriteToLog().message(stringOfText: "prestages: \(result)")
                         if let _ = result["results"] {

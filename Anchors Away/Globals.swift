@@ -21,3 +21,8 @@ struct jamfProVersion {
     static var minor = 0
     static var patch = 0
 }
+
+struct prestages {
+    static var computer = [String:AnyObject]()
+    static var mobile   = [String:AnyObject]()
+}

@@ -12,13 +12,17 @@ class Json: NSObject, URLSessionDelegate, URLSessionDataDelegate, URLSessionTask
     
     let defaults = UserDefaults.standard
     
-    func getRecord(serverUrl: String, token: String, theEndpoint: String, skip: Bool, completion: @escaping (_ result: [String:AnyObject]) -> Void) {
+    func getRecord(serverUrl: String, token: String, theEndpoint: String, page: Int, skip: Bool, completion: @escaping (_ result: [String:AnyObject]) -> Void) {
         WriteToLog().message(stringOfText: "endpoint: \(theEndpoint)     skip: \(skip)")
         if !skip {
+            if page == 0 {
+                prestages.computer.removeAll()
+                prestages.mobile.removeAll()
+            }
             let getRecordQ = OperationQueue() // DispatchQueue(label: "com.jamf.getRecordQ", qos: DispatchQoS.background)
 
             URLCache.shared.removeAllCachedResponses()
-            var existingDestString = "\(serverUrl)/api/v2/\(theEndpoint)"
+            var existingDestString = "\(serverUrl)/api/v2/\(theEndpoint)?page=0&page-size=150&sort=id%3Aasc"
 
             existingDestString = existingDestString.replacingOccurrences(of: "//api/v2", with: "/api/v2")
 
