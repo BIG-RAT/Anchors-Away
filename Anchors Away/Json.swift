@@ -22,7 +22,7 @@ class Json: NSObject, URLSessionDelegate, URLSessionDataDelegate, URLSessionTask
             let getRecordQ = OperationQueue() // DispatchQueue(label: "com.jamf.getRecordQ", qos: DispatchQoS.background)
 
             URLCache.shared.removeAllCachedResponses()
-            var existingDestString = "\(serverUrl)/api/v2/\(theEndpoint)?page=0&page-size=150&sort=id%3Aasc"
+            var existingDestString = "\(serverUrl)/api/v2/\(theEndpoint)"
 
             existingDestString = existingDestString.replacingOccurrences(of: "//api/v2", with: "/api/v2")
 
@@ -39,7 +39,7 @@ class Json: NSObject, URLSessionDelegate, URLSessionDataDelegate, URLSessionTask
 
                 jsonRequest.httpMethod = "GET"
                 let destConf = URLSessionConfiguration.default
-                destConf.httpAdditionalHeaders = ["Authorization" : "Bearer \(token)", "Content-Type" : "application/json", "Accept" : "application/json"]
+                destConf.httpAdditionalHeaders = ["Authorization" : "Bearer \(token)", "Content-Type" : "application/json", "Accept" : "application/json", "User-Agent" : appInfo.userAgentHeader]
                 let destSession = Foundation.URLSession(configuration: destConf, delegate: self, delegateQueue: OperationQueue.main)
                 let task = destSession.dataTask(with: jsonRequest as URLRequest, completionHandler: {
                     (data, response, error) -> Void in
@@ -111,7 +111,7 @@ class Json: NSObject, URLSessionDelegate, URLSessionDataDelegate, URLSessionTask
             jsonRequest.httpMethod = "PUT"
             jsonRequest.httpBody   = JSONSerializedPrestage
             let destConf = URLSessionConfiguration.default
-            destConf.httpAdditionalHeaders = ["Authorization" : "Bearer \(token)", "Content-Type" : "application/json", "Accept" : "application/json"]
+            destConf.httpAdditionalHeaders = ["Authorization" : "Bearer \(token)", "Content-Type" : "application/json", "Accept" : "application/json", "User-Agent" : appInfo.userAgentHeader]
             let destSession = Foundation.URLSession(configuration: destConf, delegate: self, delegateQueue: OperationQueue.main)
             let task = destSession.dataTask(with: jsonRequest as URLRequest, completionHandler: {
                 (data, response, error) -> Void in
@@ -156,17 +156,13 @@ class Json: NSObject, URLSessionDelegate, URLSessionDataDelegate, URLSessionTask
 
         var tokenUrlString = "\(serverUrl)/api/v1/auth/token"
         tokenUrlString     = tokenUrlString.replacingOccurrences(of: "//api", with: "/api")
-//        var tokenUrlString = "\(serverUrl)/uapi/auth/tokens"
-//        tokenUrlString     = tokenUrlString.replacingOccurrences(of: "//uapi", with: "/uapi")
-//        WriteToLog().message(stringOfText: "\(tokenUrlString)")
-
         
         let tokenUrl       = URL(string: "\(tokenUrlString)")
         let configuration  = URLSessionConfiguration.default
         var request        = URLRequest(url: tokenUrl!)
         request.httpMethod = "POST"
         
-        configuration.httpAdditionalHeaders = ["Authorization" : "Basic \(base64creds)", "Content-Type" : "application/json", "Accept" : "application/json"]
+        configuration.httpAdditionalHeaders = ["Authorization" : "Basic \(base64creds)", "Content-Type" : "application/json", "Accept" : "application/json", "User-Agent" : appInfo.userAgentHeader]
         let session = Foundation.URLSession(configuration: configuration, delegate: self as URLSessionDelegate, delegateQueue: OperationQueue.main)
         let task = session.dataTask(with: request as URLRequest, completionHandler: {
             (data, response, error) -> Void in

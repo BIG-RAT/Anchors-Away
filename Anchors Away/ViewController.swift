@@ -66,6 +66,14 @@ class ViewController: NSViewController {
     @IBAction func showFingerprinig_Button(_ sender: Any) {
         WriteToLog().message(stringOfText: "\(String(describing: platforms_Button.titleOfSelectedItem))")
     }
+    
+    @IBAction func showLogFolder(_ sender: Any) {
+        if (FileManager.default.fileExists(atPath: History.logPath!)) {
+            NSWorkspace.shared.open(URL(fileURLWithPath: History.logPath!))
+        } else {
+            Alert().display(header: "Alert", message: "There are currently no log files to display.")
+        }
+    }
 
 
     func fetchPrestages() {
@@ -95,7 +103,7 @@ class ViewController: NSViewController {
 
                 // get computer prestages
 
-                Json().getRecord(serverUrl: self.serverUrl, token: self.token, theEndpoint: "computer-prestages", page: 0, skip: self.skip(endpoint: "computer-prestages")) {
+                Json().getRecord(serverUrl: self.serverUrl, token: self.token, theEndpoint: "computer-prestages?page=0&page-size=200&sort=id%3Aasc", page: 0, skip: self.skip(endpoint: "computer-prestages")) {
                 (result: [String:AnyObject]) in
 //                    WriteToLog().message(stringOfText: "prestages: \(result)")
                     if let _ = result["results"] {
@@ -172,13 +180,12 @@ class ViewController: NSViewController {
                         WriteToLog().message(stringOfText: "finished fetching macOS prestages")
                         WriteToLog().message(stringOfText: "platforms: \(self.platforms)")
                         if self.platforms == "macOS" {
-                            print("macOS only, stop spinner")
                             self.spinner(action: "stop")
                         }
                     }
 
                     // get mobile device prestages
-                    Json().getRecord(serverUrl: self.serverUrl, token: self.token, theEndpoint: "mobile-device-prestages", page: 0, skip: self.skip(endpoint: "mobile-device-prestages")) {
+                    Json().getRecord(serverUrl: self.serverUrl, token: self.token, theEndpoint: "mobile-device-prestages?page=0&page-size=200&sort=id%3Aasc", page: 0, skip: self.skip(endpoint: "mobile-device-prestages")) {
                     (result: [String:AnyObject]) in
 //                        WriteToLog().message(stringOfText: "prestages: \(result)")
                         if let _ = result["results"] {
@@ -217,9 +224,6 @@ class ViewController: NSViewController {
                                     }
                                 }
                                 self.spinner(action: "stop")
-//                            } else {
-//                                self.spinner(action: "stop")
-//                            }
                         }
                     }   //Json().getRecord - mobile - end
                 }   //Json().getRecord - computers - end

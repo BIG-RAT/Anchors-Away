@@ -9,6 +9,15 @@
 
 import Foundation
 
+struct appInfo {
+    static let dict    = Bundle.main.infoDictionary!
+    static let version = dict["CFBundleShortVersionString"] as! String
+    static let build   = dict["CFBundleVersion"] as! String
+    static let name    = dict["CFBundleExecutable"] as! String
+
+    static let userAgentHeader = "\(String(describing: name.addingPercentEncoding(withAllowedCharacters: .alphanumerics)!))/\(appInfo.version)"
+}
+
 struct History {
     static var logPath: String? = (NSHomeDirectory() + "/Library/Logs/AnchorsAway/")
     static var logFile  = ""
